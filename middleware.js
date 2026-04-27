@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
 const protectedRoutes = ["/dashboard", "/profile", "/api/products"];
-const authRoutes = ["/api/auth/login", "/api/auth/register", "/login", "/signup"];
+const authRoutes = ["/api/auth/login", "/api/auth/register", "/authentication"];
 
 export default async function middleware(req) {
     const path = req.nextUrl.pathname;
@@ -14,7 +14,7 @@ export default async function middleware(req) {
     const cookieStore = await cookies();
 
     if (isProtectedRoute && !token) {
-        return NextResponse.redirect(new URL("/login", req.nextUrl))
+        return NextResponse.redirect(new URL("/authentication", req.nextUrl))
     }
     
     if(token){
@@ -25,7 +25,7 @@ export default async function middleware(req) {
             }
         }catch(error){
             cookieStore.delete("token");
-            return NextResponse.redirect(new URL("/login", req.nextUrl))
+            return NextResponse.redirect(new URL("/authentication", req.nextUrl))
         }
     }
 
@@ -37,7 +37,6 @@ export const config = {
     '/dashboard/:path*', 
     '/profile/:path*', 
     '/api/products/:path*',
-    '/login', 
-    '/signup'
+    '/authentication',
   ],
 };
