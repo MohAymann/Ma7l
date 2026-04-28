@@ -1,28 +1,22 @@
-import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+"use client"
+import { Card } from "@/components/ui/card"
+import LoginForm from "@/components/ui/login"
+import SignupForm from "@/components/ui/signup"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react"
 
 export default function AuthPage() {
+    const [activeTab, setActiveTab] = useState("signup")
     return (
-        <div className="size-full h-screen flex justify-center items-center">
-            <Card className="w-full max-w-sm p-5 flex justify-center">
-                <Tabs dir="rtl" variant="line" className="w-full">
-                    <TabsList variant="line" className="w-full flex gap-20">
-                        <TabsTrigger value="login" className="max-w-10 ring-0">تسجيل الدخول</TabsTrigger>
-                        <TabsTrigger value="signup" className="max-w-10">إنشاء حساب</TabsTrigger>
+        <div className="min-h-screen flex justify-center items-center py-8 px-4">
+            <Card className="w-full max-w-md p-6">
+                <Tabs dir="rtl" variant="line" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList variant="line" className="w-full grid grid-cols-2">
+                        <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
+                        <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="login">صفحة تسجيل الدخول</TabsContent>
-                    <TabsContent value="signup">صفحة انشاء الحساب</TabsContent>
+                    <TabsContent value="login"><LoginForm /></TabsContent>
+                    <TabsContent value="signup"><SignupForm setActiveTab={setActiveTab} /></TabsContent>
                 </Tabs>
             </Card>
         </div>

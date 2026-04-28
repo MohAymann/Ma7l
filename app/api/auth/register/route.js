@@ -15,6 +15,7 @@ export async function POST(req) {
         if( !name || !email || !phone || !password || !store_name || !name.trim() || !email.trim() || !phone.trim() || !password.trim() || !store_name.trim() ) {
             return NextResponse.json({ message: "All fields are required" }, { status: 400 });
         }
+        
 
         const client = await clientPromise;
         const collection = client.db("Ma7l").collection("users");
@@ -30,7 +31,7 @@ export async function POST(req) {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const user = await collection.insertOne({ name, email, phone, hashedPassword, store_name, createdAt: new Date() });
+        const user = await collection.insertOne({ name, email, phone, password: hashedPassword, store_name, createdAt: new Date(), updatedAt: new Date() });
         const token = jwt.sign({ userId: user.insertedId, name, email, phone, store_name },process.env.JSONWEBTOKEN_SECRET, {expiresIn: "7d"})
         cookieStore.set('token',token,{
             httpOnly: true,
