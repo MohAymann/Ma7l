@@ -30,7 +30,6 @@ export default function SignupForm({ setActiveTab }) {
 
     const handleCreateAccount = async e => {
         e.preventDefault();
-        setLoading(true)
         setError(null)
         if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.password.trim() || !formData.confirmPassword.trim() || !formData.store_name.trim()) {
             setError("يجب ملئ جميع البيانات اولََا");
@@ -41,6 +40,7 @@ export default function SignupForm({ setActiveTab }) {
             return;
         }
         try {
+            setLoading(true)
             const res = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: {
@@ -72,11 +72,11 @@ export default function SignupForm({ setActiveTab }) {
                 </Field>
                 <Field>
                     <FieldLabel htmlFor="email">البريد الالكتروني</FieldLabel>
-                    <Input name="email" id="email" type="email" placeholder="yourname@example.com" required onChange={handleChange} />
+                    <Input name="email" id="email" type="email" placeholder="yourname@example.com" dir="ltr" required onChange={handleChange} />
                 </Field>
                 <Field>
                     <FieldLabel htmlFor="phone">رقم الهاتف</FieldLabel>
-                    <Input name="phone" id="phone" type="tel" placeholder="+2010..." required onChange={handleChange} />
+                    <Input name="phone" id="phone" type="tel" placeholder="+2010..." dir="ltr" required onChange={handleChange} />
                 </Field>
                 <Field>
                     <FieldLabel htmlFor="store_name">اسم المتجر</FieldLabel>

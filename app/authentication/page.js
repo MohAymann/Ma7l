@@ -15,7 +15,7 @@ export default function AuthPage() {
                         <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
                         <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="login"><LoginForm /></TabsContent>
+                    <TabsContent value="login"><LoginForm setActiveTab={setActiveTab} /></TabsContent>
                     <TabsContent value="signup"><SignupForm setActiveTab={setActiveTab} /></TabsContent>
                 </Tabs>
             </Card>

@@ -9,11 +9,11 @@ export async function POST(req) {
         const cookieStore = await cookies()
         const body = await req.json();
         if(!body){
-            return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
+            return NextResponse.json({ message: "البيانات غير صحيحة" }, { status: 400 });
         }
         const { name, email, phone, password, store_name } = body
         if( !name || !email || !phone || !password || !store_name || !name.trim() || !email.trim() || !phone.trim() || !password.trim() || !store_name.trim() ) {
-            return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+            return NextResponse.json({ message: "يرجى ملئ جميع الحقول" }, { status: 400 });
         }
         
 
@@ -21,12 +21,12 @@ export async function POST(req) {
         const collection = client.db("Ma7l").collection("users");
         const existingUserEmail = await collection.findOne({ email });
         if (existingUserEmail) {
-            return NextResponse.json({ message: "Email already exists" }, { status: 400 });
+            return NextResponse.json({ message: "هناك حساب آخر بنفس البريد الالكتروني" }, { status: 400 });
         }
 
         const existingUserPhone = await collection.findOne({ phone });
         if (existingUserPhone) {
-            return NextResponse.json({ message: "Phone number already exists" }, { status: 400 });
+            return NextResponse.json({ message: "هناك حساب آخر بنفس الرقم" }, { status: 400 });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
@@ -42,9 +42,9 @@ export async function POST(req) {
         })
 
 
-        return NextResponse.json({ message: "User registered successfully", userId: user.insertedId }, { status: 201 });
+        return NextResponse.json({ message: "تم إنشاء حساب بنجاح", userId: user.insertedId }, { status: 201 });
     } catch (error) {
         console.log(error)
-        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ message: "خطأ داخلي في الخادم" }, { status: 500 });
     }
 }
