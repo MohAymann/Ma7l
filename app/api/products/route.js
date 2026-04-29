@@ -4,19 +4,46 @@ import clientPromise from "@/lib/db";
 import { cookies, headers } from "next/headers";
 
 
+export async function GET(req) {
+    try{
+        
+        const client = await clientPromise;
+        const collection = client.db("Ma7l").collection("products");
+        let user
+        try{
+            const cookieStore = await cookies();
+            const token = cookieStore.get("token").value;
+            if(!token) {throw new Error()}
 
+            const secret = process.env.JSONWEBTOKEN_SECRET
+            const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+            user = payload
+
+        } catch(err){
+            console.log(err)
+            return NextResponse.json({ message: "يرجى إعادة تسجيل الدخول"}, {status: 401})
+        }
+
+        const products = await collection.find({ ownerId: user.userId }).toArray();
+        return NextResponse.json({ products }, { status:200 } );
+
+    }catch(err) {
+        console.log(err)
+        return NextResponse.json({message: "حدث خطأفي السيرفر، يرجى إعادة المحاولة لاحقََا"}, {status: 500})
+    }
+}
 
 export async function POST(req) {
     try{
         const body = await req.json();
-        const { name, barcode, image, stock_quantity, min_stock_limit, buy_price, sell_price, category } = body;
-        if (!name || !barcode || !image || !stock_quantity || !min_stock_limit || !buy_price || !sell_price){
+        const { name, description,barcode, image, stock_quantity, min_stock_limit, buy_price, sell_price, category } = body;
+        if (!name || description || !barcode || !image || !stock_quantity || !min_stock_limit || !buy_price || !sell_price){
             return NextResponse.json({message: "يرجى ملئ جميع البيانات"}, { status:400 })
         };
         let user;
         try{
-            const headersList = await headers()
-            const token = headersList.get("token");
+            const cookieStore = await cookies()
+            const token = cookieStore.get("token").value;
             const secret = process.env.JSONWEBTOKEN_SECRET;
             if (!secret) throw new Error("Missing JWT secret");
             if (!token) {
@@ -38,6 +65,7 @@ export async function POST(req) {
             barcode,
             image,
             name,
+            description,
             stock_quantity,
             min_stock_limit,
             buy_price,
