@@ -12,7 +12,7 @@ export async function POST(req) {
         const client = await clientPromise;
         const collection = client.db("Ma7l").collection("users");
         if (!identifier || !password || !identifier.trim() || !password.trim()) {
-            return NextResponse.json({ message: "Invalid credentials" }, { status: 400 });
+            return NextResponse.json({ message: "البيانات غير صحيحة" }, { status: 400 });
         }
         const user = await collection.findOne({
             $or: [
@@ -21,11 +21,11 @@ export async function POST(req) {
             ]
         });
         if (!user) {
-            return NextResponse.json({ message: "invalid identifier or password" }, { status: 400 });
+            return NextResponse.json({ message: "معرف او كلمة مرور خاطئة" }, { status: 400 });
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return NextResponse.json({ message: "invalid identifier number or password" }, { status: 400 });
+            return NextResponse.json({ message: "معرف او كلمة مرور خاطئة" }, { status: 400 });
         }
 
         const token = jwt.sign({ userId: user._id, name: user.name, phone: user.phone, email: user?.email || null, store_name: user.store_name }, process.env.JSONWEBTOKEN_SECRET, { expiresIn: "7d" });
@@ -37,9 +37,9 @@ export async function POST(req) {
             path: "/",
         });
 
-        return NextResponse.json({ message: "Login successful", userId: user._id }, { status: 200 });
+        return NextResponse.json({ message: "تم تسجيل الدخول بنجاح", userId: user._id }, { status: 200 });
     } catch (error) {
         console.log(error)
-        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ message: "حدث خطأ في الخادم، يرجى إعادة المحاولة لاحقََا" }, { status: 500 });
     }
 }
