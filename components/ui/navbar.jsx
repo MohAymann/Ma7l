@@ -51,6 +51,7 @@ export default function Navbar() {
             router.push("/authentication")
         }
     }
+    console.log(user)
 
     return (
         <header

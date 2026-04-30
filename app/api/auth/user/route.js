@@ -13,7 +13,7 @@ export async function GET() {
     } catch(err){
         console.log(err)
         const cookieStore = await cookies()
-        // cookieStore.delete("token");
+        if(cookieStore.get("token")) {cookieStore.delete("token");}
         return NextResponse.json({ message: "Unauthorized"}, { status:401 })
     }
 }
