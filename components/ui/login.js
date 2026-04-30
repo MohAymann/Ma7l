@@ -45,11 +45,12 @@ export default function LoginForm({ setActiveTab }){
                 setError(data?.message ?? "حدث خطأ، يرجى إعادة المحاولة")
             }
             
-            router.push("/dashboard")
         }catch(err){
             setError(err.message)
         }finally{
             setLoading(false)
+            router.refresh()
+            router.push("/dashboard")
         }
 
     }

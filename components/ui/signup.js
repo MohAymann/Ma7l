@@ -46,7 +46,7 @@ export default function SignupForm({ setActiveTab }) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, password:formData.password, store_name: formData.store_name })
+                body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, password: formData.password, store_name: formData.store_name })
             });
 
             const data = await res.json();
@@ -55,8 +55,9 @@ export default function SignupForm({ setActiveTab }) {
 
         } catch (error) {
             setError(error.message)
-        }finally{
+        } finally {
             setLoading(false)
+            router.refresh()
             router.push("/dashboard")
         }
     }
