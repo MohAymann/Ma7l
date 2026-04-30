@@ -36,8 +36,9 @@ export async function GET(req) {
 export async function POST(req) {
     try{
         const body = await req.json();
-        const { name, description,barcode, image, stock_quantity, min_stock_limit, buy_price, sell_price, category } = body;
-        if (!name || description || !barcode || !image || !stock_quantity || !min_stock_limit || !buy_price || !sell_price){
+        const { name, description, barcode, image, stock_quantity, min_stock_limit, buy_price, sell_price, category } = body;
+        if (!name || !description || !barcode || !image || !stock_quantity || !min_stock_limit || !buy_price || !sell_price){
+            console.log(name,description,barcode,image,stock_quantity,min_stock_limit,buy_price,sell_price)
             return NextResponse.json({message: "يرجى ملئ جميع البيانات"}, { status:400 })
         };
         let user;
