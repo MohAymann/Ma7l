@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import ProductsTable from "@/components/ui/productsTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { Search } from "lucide-react";
@@ -67,7 +68,9 @@ export default function ProductsPage() {
                     className="pe-9"
                 />
             </div>
-
+            <div>
+                <ProductsTable products={filteredProducts} />
+            </div>
             <section />
         </div>
     )
