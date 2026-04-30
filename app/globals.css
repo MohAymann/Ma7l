@@ -87,14 +87,14 @@
 
   --radius: 0.75rem;
 
-  /* الـ Sidebar بالكحلي البراندينج بتاعنا */
-  --sidebar: oklch(0.22 0.04 245);
-  --sidebar-foreground: oklch(0.98 0.01 245);
+  /* Sidebar - soft light panel with deep navy text */
+  --sidebar: oklch(0.97 0.005 245);
+  --sidebar-foreground: oklch(0.25 0.04 245);
   --sidebar-primary: oklch(0.70 0.19 145);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(1 0 0 / 0.1);
-  --sidebar-accent-foreground: oklch(0.98 0.01 245);
-  --sidebar-border: oklch(1 0 0 / 0.1);
+  --sidebar-accent: oklch(0.92 0.01 245);
+  --sidebar-accent-foreground: oklch(0.25 0.04 245);
+  --sidebar-border: oklch(0.88 0.01 245);
   --sidebar-ring: oklch(0.70 0.19 145);
 }
 
@@ -123,6 +123,9 @@
 
   --sidebar: oklch(0.15 0.03 245);
   --sidebar-foreground: oklch(0.98 0.01 245);
+  --sidebar-accent: oklch(1 0 0 / 0.08);
+  --sidebar-accent-foreground: oklch(0.98 0.01 245);
+  --sidebar-border: oklch(1 0 0 / 0.1);
 }
 
 @layer base {
