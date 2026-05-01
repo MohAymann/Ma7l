@@ -1,11 +1,13 @@
 "use client";
 
+import CreateProductDialog from "@/components/ui/createProductDialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductsTable from "@/components/ui/productsTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function ProductsPage() {
     const { user, loading: userLoading } = useAuth()
@@ -15,21 +17,22 @@ export default function ProductsPage() {
     const [error, setError] = useState(null)
     const [query, setQuery] = useState("")
 
-    useEffect(() => {
-        const getProducts = async () => {
-            try {
-                const res = await fetch("/api/products");
-                const data = await res.json();
-                setProducts(data.products)
-            } catch (err) {
-                console.log(err)
-                setError(err)
-            } finally {
-                setLoading(false)
-            }
+    const getProducts = useCallback(async () => {
+        try {
+            const res = await fetch("/api/products");
+            const data = await res.json();
+            setProducts(data.products)
+        } catch (err) {
+            console.log(err)
+            setError(err)
+        } finally {
+            setLoading(false)
         }
-        getProducts();
     }, []);
+
+    useEffect(() => {
+        getProducts();
+    }, [getProducts]);
 
     useEffect(() => {
         const searchWord = query.toLowerCase();
@@ -46,7 +49,7 @@ export default function ProductsPage() {
         });
 
         setFilteredProducts(result);
-        console.log("query:",result)
+        console.log("query:", result)
     }, [query, products]);
 
     return (
@@ -55,7 +58,12 @@ export default function ProductsPage() {
                 <h1 className="text-2xl font-bold tracking-tight truncate">
                     {userLoading ? <Skeleton className="h-7 w-40" /> : (user?.store_name || "متجري")}
                 </h1>
-                <div />
+                <CreateProductDialog onCreated={getProducts}>
+                    <Button>
+                        <Plus className="h-4 w-4" />
+                        إضافة منتج
+                    </Button>
+                </CreateProductDialog>
             </header>
 
             <div className="relative">
