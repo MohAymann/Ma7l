@@ -1,12 +1,14 @@
 "use client";
 
+import BarcodeScannerDialog from "@/components/ui/barcodeScannerDialog";
 import CreateProductDialog from "@/components/ui/createProductDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductsTable from "@/components/ui/productsTable";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search } from "lucide-react";
+import { AlertCircle, Camera, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 export default function ProductsPage() {
@@ -19,12 +21,15 @@ export default function ProductsPage() {
 
     const getProducts = useCallback(async () => {
         try {
+            setLoading(true)
+            setError(null)
             const res = await fetch("/api/products");
             const data = await res.json();
-            setProducts(data.products)
+            if (!res.ok) throw new Error(data?.message ?? "تعذر تحميل المنتجات")
+            setProducts(data.products ?? [])
         } catch (err) {
             console.log(err)
-            setError(err)
+            setError(err.message)
         } finally {
             setLoading(false)
         }
@@ -40,12 +45,12 @@ export default function ProductsPage() {
         const result = products.filter(item => {
             const inName = item.name.toLowerCase().includes(searchWord);
             const inDescription = item.description.toLowerCase().includes(searchWord);
+            const inBarcode = item.barcode?.toString().includes(searchWord)
             const inCategory = item.category.some(i =>
                 i.toLowerCase().includes(searchWord)
             );
-            // const inBarcode = item.barcode.includes(searchWord)
 
-            return inName || inDescription || inCategory;
+            return inName || inDescription || inCategory || inBarcode;
         });
 
         setFilteredProducts(result);
@@ -66,20 +71,41 @@ export default function ProductsPage() {
                 </CreateProductDialog>
             </header>
 
-            <div className="relative">
-                <Search className="absolute top-1/2 -translate-y-1/2 inset-e-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                    type="search"
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    placeholder="ابحث عن منتج..."
-                    className="pe-9"
-                />
+            <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute top-1/2 -translate-y-1/2 inset-e-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                        type="search"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        placeholder="ابحث بالاسم أو الوصف أو التصنيف أو الباركود..."
+                        className="pe-9"
+                    />
+                </div>
+                <BarcodeScannerDialog onScan={setQuery}>
+                    <Button variant="outline" size="icon" aria-label="مسح الباركود">
+                        <Camera className="h-4 w-4" />
+                    </Button>
+                </BarcodeScannerDialog>
             </div>
             <div>
-                <ProductsTable products={filteredProducts} />
+                {loading ? (
+                    <div className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card py-16 text-muted-foreground">
+                        <Spinner />
+                        <span>جارٍ تحميل المنتجات...</span>
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
+                        <AlertCircle className="h-6 w-6 text-destructive" />
+                        <p className="text-sm text-destructive">{error}</p>
+                        <Button variant="outline" size="sm" onClick={getProducts}>
+                            إعادة المحاولة
+                        </Button>
+                    </div>
+                ) : (
+                    <ProductsTable products={filteredProducts} />
+                )}
             </div>
-            <section />
         </div>
     )
 }

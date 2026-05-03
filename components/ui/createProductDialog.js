@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Plus, Upload, X } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
+import { toast } from "sonner";
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter,
     DialogHeader, DialogTitle, DialogTrigger,
@@ -134,8 +135,12 @@ export default function CreateProductDialog({ children, onCreated }) {
             const data = await res.json();
             if (!res.ok) throw new Error(data?.message ?? "تعذرت إضافة المنتج");
             reset(); setOpen(false);
+            toast.success("تمت إضافة المنتج بنجاح");
             onCreated?.();
-        } catch (err) { setError(err.message); }
+        } catch (err) {
+            setError(err.message);
+            toast.error(err.message);
+        }
         finally { setSubmitting(false); }
     };
 
