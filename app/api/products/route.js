@@ -103,3 +103,32 @@ export async function PATCH(req) {
         return NextResponse.json({ message: "حدث خطأ في السيرفر، يرجى المحاولة لاحقََا"}, { status: 500 })
     }
 }
+
+export async function DELETE(req) {
+    try {
+        const { targetId } = await req.json()
+
+        if (!targetId) return NextResponse.json({ message: "ID مطلوب" }, { status: 400 });
+
+        const cookieStore = await cookies();
+        const token = cookieStore.get("token")?.value;
+        const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.JSONWEBTOKEN_SECRET));
+
+        const client = await clientPromise;
+        const collection = client.db("Ma7l").collection("products");
+
+        const result = await collection.deleteOne({ 
+            _id: new ObjectId(targetId), 
+            ownerId: payload.userId 
+        });
+
+        if (result.deletedCount === 0) {
+            return NextResponse.json({ message: "المنتج غير موجود أو لا تملك صلاحية حذفه" }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "تم حذف المنتج بنجاح" }, { status: 200 });
+    } catch (err) {
+        console.log(err);
+        return NextResponse.json({ message: "حدث خطأ في السيرفر" }, { status: 500 });
+    }
+}
