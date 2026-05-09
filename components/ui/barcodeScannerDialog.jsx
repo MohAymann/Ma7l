@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
 import {
@@ -10,28 +10,32 @@ import {
 
 const SCANNER_ID = "barcode-scanner-dialog";
 
-export default function BarcodeScannerDialog({ children, onScan }) {
-    const [open, setOpen] = useState(false);
+function ScannerView({ onResult }) {
+    const onResultRef = useRef(onResult);
+    onResultRef.current = onResult;
 
     useEffect(() => {
-        if (!open) return;
         if (typeof window !== "undefined" && !window.isSecureContext) {
             toast.error("الكاميرا تتطلب اتصال آمن (HTTPS)");
-            setOpen(false);
+            onResultRef.current?.(null);
             return;
         }
         if (!navigator.mediaDevices?.getUserMedia) {
             toast.error("المتصفح لا يدعم الوصول إلى الكاميرا");
-            setOpen(false);
+            onResultRef.current?.(null);
             return;
         }
+        if (!document.getElementById(SCANNER_ID)) return;
+
+        let cancelled = false;
         const scanner = new Html5Qrcode(SCANNER_ID);
         const starting = scanner.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 150 } },
             decoded => {
-                onScan?.(decoded);
-                setOpen(false);
+                if (cancelled) return;
+                cancelled = true;
+                onResultRef.current?.(decoded);
             },
             () => { }
         ).catch(err => {
@@ -40,16 +44,33 @@ export default function BarcodeScannerDialog({ children, onScan }) {
                 : name === "NotFoundError" ? "لم يتم العثور على كاميرا"
                     : `تعذر فتح الكاميرا: ${err?.message || name || "خطأ غير معروف"}`;
             toast.error(msg);
-            setOpen(false);
-            throw err;
+            onResultRef.current?.(null);
         });
+
         return () => {
+            cancelled = true;
             starting
                 .then(() => scanner.stop())
                 .then(() => scanner.clear())
                 .catch(() => { });
         };
-    }, [open, onScan]);
+    }, []);
+
+    return (
+        <div
+            id={SCANNER_ID}
+            className="w-full min-h-64 overflow-hidden rounded-md border border-border bg-black"
+        />
+    );
+}
+
+export default function BarcodeScannerDialog({ children, onScan }) {
+    const [open, setOpen] = useState(false);
+
+    const handleResult = value => {
+        setOpen(false);
+        if (value) onScan?.(value);
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -59,10 +80,7 @@ export default function BarcodeScannerDialog({ children, onScan }) {
                     <DialogTitle>مسح الباركود</DialogTitle>
                     <DialogDescription>وجّه الكاميرا إلى الباركود</DialogDescription>
                 </DialogHeader>
-                <div
-                    id={SCANNER_ID}
-                    className="w-full min-h-64 overflow-hidden rounded-md border border-border bg-black"
-                />
+                {open && <ScannerView onResult={handleResult} />}
             </DialogContent>
         </Dialog>
     );
