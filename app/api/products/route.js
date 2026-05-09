@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import clientPromise from "@/lib/db";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
 
 
 export async function GET(req) {
@@ -79,5 +80,26 @@ export async function POST(req) {
     }catch (err){
         console.log(err)
         return NextResponse.json({ message: "حدث خطأ في الخادم، يرجى إعادة المحاولة لاحقََا" }, {status: 500})
+    }
+}
+
+export async function PATCH(req) {
+    try{
+        const { targetId, updatedProduct} = await req.json();
+        if(!targetId || !updatedProduct) return NextResponse.json({ message: "wrong data"}, { status: 400 })
+        const client = await clientPromise;
+        const collection = client.db("Ma7l").collection("products");
+
+        const cookieStore = await cookies()
+        const token = cookieStore.get("token").value
+        const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.JSONWEBTOKEN_SECRET))
+
+        const result = await collection.updateOne({ _id: new ObjectId(targetId), ownerId: payload.userId }, { $set: updatedProduct });
+        if(result.matchedCount === 0) return NextResponse.json({ message: "لم يتم العثور على المنتج"}, { status: 404 })
+
+        return NextResponse.json({ message: "تم تعديل المنتج بنجاح"}, { status: 200 })
+    }catch(err) {
+        console.log(err)
+        return NextResponse.json({ message: "حدث خطأ في السيرفر، يرجى المحاولة لاحقََا"}, { status: 500 })
     }
 }
