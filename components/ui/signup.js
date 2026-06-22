@@ -58,7 +58,7 @@ export default function SignupForm({ setActiveTab }) {
         } finally {
             setLoading(false)
             router.refresh()
-            router.push("/dashboard")
+            router.push("/verify-email")
         }
     }
     return (

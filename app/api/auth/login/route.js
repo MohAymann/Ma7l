@@ -16,8 +16,8 @@ export async function POST(req) {
         }
         const user = await collection.findOne({
             $or: [
-                { email: identifier },
-                { phone: identifier }
+                { email: identifier.trim().toLowerCase() },
+                { phone: identifier.trim() }
             ]
         });
         if (!user) {

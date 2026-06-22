@@ -19,7 +19,12 @@ export default async function middleware(req) {
     
     if(token){
         try{
-            await jwtVerify(token, new TextEncoder().encode(process.env.JSONWEBTOKEN_SECRET));
+            const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.JSONWEBTOKEN_SECRET));
+            
+            if (isProtectedRoute && payload.isVerified === false) {
+                return NextResponse.redirect(new URL("/verify-email", req.nextUrl))
+            }
+
             if(isAuthRoute){
                 return NextResponse.redirect(new URL("/dashboard", req.nextUrl))
             }
