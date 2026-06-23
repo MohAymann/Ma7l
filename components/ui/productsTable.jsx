@@ -10,7 +10,12 @@ function StockStatus({ stock, min }) {
     return <Badge className="bg-primary/10 text-primary">متوفر</Badge>
 }
 
-export default function ProductsTable({ products }) {
+export default function ProductsTable({ products, setDeleteProductOpen, setDeleteProductId }) {
+
+    const handleDeleteClick = (id) => {
+        setDeleteProductId(id)
+        setDeleteProductOpen(true)
+    }
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card">
             <Table>
@@ -82,6 +87,7 @@ export default function ProductsTable({ products }) {
                                         <Pencil className="h-4 w-4" />
                                     </Button>
                                     <Button
+                                        onClick={() => handleDeleteClick(product._id)}
                                         variant="ghost"
                                         size="icon-sm"
                                         aria-label="حذف"

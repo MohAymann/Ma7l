@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/useAuth";
 import { AlertCircle, Camera, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import DeleteProductDialog from "@/components/ui/deleteProductDialog";
 
 export default function ProductsPage() {
     const { user, loading: userLoading } = useAuth()
@@ -18,6 +19,8 @@ export default function ProductsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null)
     const [query, setQuery] = useState("")
+    const [deleteProductOpen, setDeleteProductOpen] = useState(false)
+    const [deleteProductId, setDeleteProductId] = useState(null)
 
     const getProducts = useCallback(async () => {
         try {
@@ -103,9 +106,10 @@ export default function ProductsPage() {
                         </Button>
                     </div>
                 ) : (
-                    <ProductsTable products={filteredProducts} />
+                    <ProductsTable products={filteredProducts} setDeleteProductId={setDeleteProductId} setDeleteProductOpen={setDeleteProductOpen}/>
                 )}
             </div>
+            <DeleteProductDialog open={deleteProductOpen} setOpen={setDeleteProductOpen} id={deleteProductId} />
         </div>
     )
 }
