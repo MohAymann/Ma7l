@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AlertCircle, Camera, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import DeleteProductDialog from "@/components/ui/deleteProductDialog";
+import UpdateProductDialog from "@/components/ui/updateProductDialog";
 
 export default function ProductsPage() {
     const { user, loading: userLoading } = useAuth()
@@ -21,6 +22,8 @@ export default function ProductsPage() {
     const [query, setQuery] = useState("")
     const [deleteProductOpen, setDeleteProductOpen] = useState(false)
     const [deleteProductId, setDeleteProductId] = useState(null)
+    const [updateProductOpen, setUpdateProductOpen] = useState(false)
+    const [updateProduct, setUpdateProduct] = useState(null)
 
     const getProducts = useCallback(async () => {
         try {
@@ -106,10 +109,11 @@ export default function ProductsPage() {
                         </Button>
                     </div>
                 ) : (
-                    <ProductsTable products={filteredProducts} setDeleteProductId={setDeleteProductId} setDeleteProductOpen={setDeleteProductOpen}/>
+                    <ProductsTable products={filteredProducts} setDeleteProductId={setDeleteProductId} setDeleteProductOpen={setDeleteProductOpen} setUpdateProduct={setUpdateProduct} setUpdateProductOpen={setUpdateProductOpen}/>
                 )}
             </div>
             <DeleteProductDialog open={deleteProductOpen} setOpen={setDeleteProductOpen} id={deleteProductId} />
+            <UpdateProductDialog open={updateProductOpen} setOpen={setUpdateProductOpen} product={updateProduct} />
         </div>
     )
 }

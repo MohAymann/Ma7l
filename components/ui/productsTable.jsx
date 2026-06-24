@@ -10,11 +10,16 @@ function StockStatus({ stock, min }) {
     return <Badge className="bg-primary/10 text-primary">متوفر</Badge>
 }
 
-export default function ProductsTable({ products, setDeleteProductOpen, setDeleteProductId }) {
+export default function ProductsTable({ products, setDeleteProductOpen, setDeleteProductId, setUpdateProductOpen, setUpdateProduct }) {
 
     const handleDeleteClick = (id) => {
         setDeleteProductId(id)
         setDeleteProductOpen(true)
+    }
+
+    const handleUpdateClick = (product) => {
+        setUpdateProduct(product)
+        setUpdateProductOpen(true)
     }
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card">
@@ -83,7 +88,7 @@ export default function ProductsTable({ products, setDeleteProductOpen, setDelet
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center justify-end gap-1">
-                                    <Button variant="ghost" size="icon-sm" aria-label="تعديل">
+                                    <Button variant="ghost" size="icon-sm" aria-label="تعديل" onClick={() => handleUpdateClick(product)}>
                                         <Pencil className="h-4 w-4" />
                                     </Button>
                                     <Button

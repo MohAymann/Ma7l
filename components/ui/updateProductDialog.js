@@ -6,7 +6,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, DialogTrigger,
+    DialogHeader, DialogTitle,
 } from "./dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "./field";
 import { Input } from "./input";
@@ -15,17 +15,13 @@ import { Button } from "./button";
 import { Badge } from "./badge";
 import { Spinner } from "./spinner";
 
-const SCANNER_ID = "create-product-scanner";
+const SCANNER_ID = "update-product-scanner";
 
-const initialForm = {
-    barcode: "", image: "", name: "", description: "",
-    stock_quantity: "", min_stock_limit: "",
-    buy_price: "", sell_price: "",
-};
-
-export default function CreateProductDialog({ children, onCreated }) {
-    const [open, setOpen] = useState(false);
-    const [form, setForm] = useState(initialForm);
+export default function UpdateProductDialog({ open, setOpen, product, onUpdated }) {
+    const [form, setForm] = useState({
+        name: "", description: "", buy_price: 0, sell_price: 0,
+        barcode: "", image: "", stock_quantity: 0, min_stock_limit: 0,
+    });
     const [categories, setCategories] = useState([]);
     const [categoryInput, setCategoryInput] = useState("");
     const [scanning, setScanning] = useState(false);
@@ -34,10 +30,24 @@ export default function CreateProductDialog({ children, onCreated }) {
     const [error, setError] = useState(null);
     const scannerRef = useRef(null);
 
-    const reset = () => {
-        setForm(initialForm); setCategories([]); setCategoryInput("");
-        setError(null); setScanning(false);
-    };
+    useEffect(() => {
+        if (open && product) {
+            setForm({
+                name: product.name || "",
+                description: product.description || "",
+                buy_price: product.buy_price || 0,
+                sell_price: product.sell_price || 0,
+                barcode: product.barcode || "",
+                image: product.image || "",
+                stock_quantity: product.stock_quantity || 0,
+                min_stock_limit: product.min_stock_limit || 0,
+            });
+            setCategories(product.category || []);
+            setCategoryInput("");
+            setError(null);
+            setScanning(false);
+        }
+    }, [open, product]);
 
     const handleChange = e => {
         const { name, value } = e.target;
@@ -105,38 +115,44 @@ export default function CreateProductDialog({ children, onCreated }) {
         };
     }, [scanning]);
 
-    const handleSubmit = async e => {
+    const handleUpdateProduct = async e => {
         e.preventDefault();
         setError(null);
+        
         const payload = {
-            barcode: form.barcode,
-            image: form.image,
-            name: form.name,
-            description: form.description,
-            stock_quantity: Number(form.stock_quantity),
-            min_stock_limit: Number(form.min_stock_limit),
-            buy_price: Number(form.buy_price),
-            sell_price: Number(form.sell_price),
-            category: categories,
+            targetId: product._id,
+            updatedProduct: {
+                barcode: form.barcode,
+                image: form.image,
+                name: form.name,
+                description: form.description,
+                stock_quantity: Number(form.stock_quantity),
+                min_stock_limit: Number(form.min_stock_limit),
+                buy_price: Number(form.buy_price),
+                sell_price: Number(form.sell_price),
+                category: categories,
+            }
         };
-        if (!payload.name || !payload.description || !payload.barcode || !payload.image
-            || !payload.stock_quantity || !payload.min_stock_limit
-            || !payload.buy_price || !payload.sell_price) {
-            setError("يرجى ملئ جميع البيانات");
+
+        if (!payload.updatedProduct.name || !payload.updatedProduct.description || !payload.updatedProduct.barcode || !payload.updatedProduct.image
+            || form.stock_quantity === "" || form.min_stock_limit === ""
+            || form.buy_price === "" || form.sell_price === "") {
+            setError("يرجى ملئ جميع البيانات الأساسية");
             return;
         }
+        
         try {
             setSubmitting(true);
             const res = await fetch("/api/products", {
-                method: "POST",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data?.message ?? "تعذرت إضافة المنتج");
-            reset(); setOpen(false);
-            toast.success("تمت إضافة المنتج بنجاح");
-            onCreated?.();
+            if (!res.ok) throw new Error(data?.message ?? "تعذر تعديل المنتج");
+            setOpen(false);
+            toast.success("تم تعديل المنتج بنجاح");
+            onUpdated?.();
         } catch (err) {
             setError(err.message);
             toast.error(err.message);
@@ -146,20 +162,19 @@ export default function CreateProductDialog({ children, onCreated }) {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" showCloseButton={false} dir="rtl">
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl" showCloseButton={false}>
                 <DialogHeader>
-                    <DialogTitle>إضافة منتج جديد</DialogTitle>
-                    <DialogDescription>املأ بيانات المنتج لإضافته إلى المخزن</DialogDescription>
+                    <DialogTitle>تعديل المنتج</DialogTitle>
+                    <DialogDescription>تعديل بيانات المنتج: <span className="text-primary font-bold">{product?.name}</span></DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleUpdateProduct}>
                     <FieldGroup className="gap-4">
                         {error && <FieldError>{error}</FieldError>}
 
                         <Field>
-                            <FieldLabel htmlFor="image">الصورة</FieldLabel>
+                            <FieldLabel htmlFor="update-image">الصورة</FieldLabel>
                             <label
-                                htmlFor="image"
+                                htmlFor="update-image"
                                 className="flex items-center gap-3 cursor-pointer rounded-md border border-dashed border-input bg-transparent p-2 transition-colors hover:bg-accent dark:bg-input/30 dark:hover:bg-input/50"
                             >
                                 <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input bg-transparent dark:bg-input/30">
@@ -171,7 +186,7 @@ export default function CreateProductDialog({ children, onCreated }) {
                                     {uploading ? "جارٍ الرفع..." : form.image ? "تغيير الصورة" : "اضغط لاختيار صورة"}
                                 </span>
                                 <input
-                                    id="image"
+                                    id="update-image"
                                     type="file"
                                     accept="image/*"
                                     onChange={handleUpload}
@@ -182,9 +197,9 @@ export default function CreateProductDialog({ children, onCreated }) {
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="barcode">الباركود</FieldLabel>
+                            <FieldLabel htmlFor="update-barcode">الباركود</FieldLabel>
                             <div className="flex gap-2">
-                                <Input id="barcode" name="barcode" value={form.barcode} onChange={handleChange} inputMode="numeric" />
+                                <Input id="update-barcode" name="barcode" value={form.barcode} onChange={handleChange} inputMode="numeric" />
                                 <Button type="button" variant="outline" size="icon" onClick={() => setScanning(s => !s)} aria-label="مسح الباركود">
                                     {scanning ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
                                 </Button>
@@ -198,34 +213,34 @@ export default function CreateProductDialog({ children, onCreated }) {
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="name">اسم المنتج</FieldLabel>
-                            <Input id="name" name="name" value={form.name} onChange={handleChange} />
+                            <FieldLabel htmlFor="update-name">اسم المنتج</FieldLabel>
+                            <Input id="update-name" name="name" value={form.name} onChange={handleChange} />
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="description">الوصف</FieldLabel>
-                            <Textarea id="description" name="description" value={form.description} onChange={handleChange} rows={2} />
+                            <FieldLabel htmlFor="update-description">الوصف</FieldLabel>
+                            <Textarea id="update-description" name="description" value={form.description} onChange={handleChange} rows={2} />
                         </Field>
 
                         <div className="grid grid-cols-2 gap-3">
                             <Field>
-                                <FieldLabel htmlFor="stock_quantity">الكمية</FieldLabel>
-                                <Input id="stock_quantity" name="stock_quantity" type="number" min="0" value={form.stock_quantity} onChange={handleChange} />
+                                <FieldLabel htmlFor="update-stock_quantity">الكمية</FieldLabel>
+                                <Input id="update-stock_quantity" name="stock_quantity" type="number" min="0" value={form.stock_quantity} onChange={handleChange} />
                             </Field>
                             <Field>
-                                <FieldLabel htmlFor="min_stock_limit">الحد الأدنى</FieldLabel>
-                                <Input id="min_stock_limit" name="min_stock_limit" type="number" min="0" value={form.min_stock_limit} onChange={handleChange} />
+                                <FieldLabel htmlFor="update-min_stock_limit">الحد الأدنى</FieldLabel>
+                                <Input id="update-min_stock_limit" name="min_stock_limit" type="number" min="0" value={form.min_stock_limit} onChange={handleChange} />
                             </Field>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <Field>
-                                <FieldLabel htmlFor="buy_price">سعر الشراء</FieldLabel>
-                                <Input id="buy_price" name="buy_price" type="number" min="0" value={form.buy_price} onChange={handleChange} />
+                                <FieldLabel htmlFor="update-buy_price">سعر الشراء</FieldLabel>
+                                <Input id="update-buy_price" name="buy_price" type="number" min="0" value={form.buy_price} onChange={handleChange} />
                             </Field>
                             <Field>
-                                <FieldLabel htmlFor="sell_price">سعر البيع</FieldLabel>
-                                <Input id="sell_price" name="sell_price" type="number" min="0" value={form.sell_price} onChange={handleChange} />
+                                <FieldLabel htmlFor="update-sell_price">سعر البيع</FieldLabel>
+                                <Input id="update-sell_price" name="sell_price" type="number" min="0" value={form.sell_price} onChange={handleChange} />
                             </Field>
                         </div>
 
@@ -243,7 +258,7 @@ export default function CreateProductDialog({ children, onCreated }) {
                                 </Button>
                             </div>
                             {categories.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5">
+                                <div className="flex flex-wrap gap-1.5 mt-2">
                                     {categories.map(c => (
                                         <Badge key={c} variant="secondary" className="gap-1">
                                             {c}
@@ -266,7 +281,7 @@ export default function CreateProductDialog({ children, onCreated }) {
                             إلغاء
                         </Button>
                         <Button type="submit" disabled={submitting || uploading}>
-                            {submitting && <Spinner />} إضافة
+                            {submitting && <Spinner />} حفظ التعديلات
                         </Button>
                     </DialogFooter>
                 </form>
