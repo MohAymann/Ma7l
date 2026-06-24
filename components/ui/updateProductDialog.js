@@ -172,28 +172,35 @@ export default function UpdateProductDialog({ open, setOpen, product, onUpdated 
                         {error && <FieldError>{error}</FieldError>}
 
                         <Field>
-                            <FieldLabel htmlFor="update-image">الصورة</FieldLabel>
-                            <label
-                                htmlFor="update-image"
-                                className="flex items-center gap-3 cursor-pointer rounded-md border border-dashed border-input bg-transparent p-2 transition-colors hover:bg-accent dark:bg-input/30 dark:hover:bg-input/50"
-                            >
-                                <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input bg-transparent dark:bg-input/30">
-                                    {uploading ? <Spinner /> : form.image
-                                        ? <img src={form.image} alt="" className="size-full object-cover" />
-                                        : <Upload className="h-4 w-4 text-muted-foreground" />}
-                                </div>
-                                <span className="text-sm text-muted-foreground">
-                                    {uploading ? "جارٍ الرفع..." : form.image ? "تغيير الصورة" : "اضغط لاختيار صورة"}
-                                </span>
-                                <input
-                                    id="update-image"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleUpload}
-                                    disabled={uploading}
-                                    className="sr-only"
+                            <FieldLabel htmlFor="update-image">الصورة (رابط أو رفع من الجهاز)</FieldLabel>
+                            <div className="flex gap-2">
+                                <Input 
+                                    id="update-image" 
+                                    name="image" 
+                                    value={form.image} 
+                                    onChange={handleChange} 
+                                    placeholder="أدخل رابط الصورة..." 
                                 />
-                            </label>
+                                <div className="relative shrink-0">
+                                    <Button type="button" variant="outline" size="icon" disabled={uploading} aria-label="رفع صورة من الجهاز" tabIndex={-1}>
+                                        {uploading ? <Spinner className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
+                                    </Button>
+                                    <input
+                                        id="update-image-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleUpload}
+                                        disabled={uploading}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                        title="اختر صورة من الجهاز"
+                                    />
+                                </div>
+                            </div>
+                            {form.image && (
+                                <div className="mt-2 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted">
+                                    <img src={form.image} alt="معاينة الصورة" className="size-full object-cover" />
+                                </div>
+                            )}
                         </Field>
 
                         <Field>
