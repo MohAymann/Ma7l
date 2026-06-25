@@ -27,6 +27,7 @@ export default function CreateProductDialog({ children, onCreated }) {
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState(initialForm);
     const [categories, setCategories] = useState([]);
+    const [availableCategories, setAvailableCategories] = useState([]);
     const [categoryInput, setCategoryInput] = useState("");
     const [scanning, setScanning] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -58,11 +59,49 @@ export default function CreateProductDialog({ children, onCreated }) {
         finally { setUploading(false); }
     };
 
-    const addCategory = () => {
+    useEffect(() => {
+        if (open) {
+            fetch("/api/categories")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.categories) setAvailableCategories(data.categories);
+                })
+                .catch(() => {});
+        }
+    }, [open]);
+
+    const addCategory = async () => {
         const val = categoryInput.trim();
-        if (!val || categories.includes(val)) return;
-        setCategories(prev => [...prev, val]);
-        setCategoryInput("");
+        if (!val) return;
+        
+        if (categories.some(c => (typeof c === 'string' ? c : c.name) === val)) {
+            setCategoryInput("");
+            return;
+        }
+
+        const existing = availableCategories.find(c => c.name === val);
+        if (existing) {
+            setCategories(prev => [...prev, { id: existing._id, name: existing.name }]);
+            setCategoryInput("");
+        } else {
+            try {
+                const res = await fetch("/api/categories", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: val })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setCategories(prev => [...prev, { id: data.category._id, name: data.category.name }]);
+                    setAvailableCategories(prev => [...prev, data.category]);
+                    setCategoryInput("");
+                } else {
+                    toast.error(data.message || "تعذر إنشاء التصنيف");
+                }
+            } catch (err) {
+                toast.error("تعذر إنشاء التصنيف");
+            }
+        }
     };
 
     useEffect(() => {
@@ -240,29 +279,38 @@ export default function CreateProductDialog({ children, onCreated }) {
                             <FieldLabel>التصنيفات</FieldLabel>
                             <div className="flex gap-2">
                                 <Input
+                                    list="existing-categories"
                                     value={categoryInput}
                                     onChange={e => setCategoryInput(e.target.value)}
                                     onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCategory(); } }}
-                                    placeholder="أضف تصنيف ثم Enter"
+                                    placeholder="اختر أو أضف تصنيف جديد ثم Enter"
                                 />
+                                <datalist id="existing-categories">
+                                    {availableCategories.map(cat => (
+                                        <option key={cat._id} value={cat.name} />
+                                    ))}
+                                </datalist>
                                 <Button type="button" variant="outline" size="icon" onClick={addCategory} aria-label="إضافة">
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             </div>
                             {categories.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5">
-                                    {categories.map(c => (
-                                        <Badge key={c} variant="secondary" className="gap-1">
-                                            {c}
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                    {categories.map((c, i) => {
+                                        const name = typeof c === 'string' ? c : c.name;
+                                        const id = typeof c === 'string' ? name : c.id;
+                                        return (
+                                        <Badge key={i} variant="secondary" className="gap-1">
+                                            {name}
                                             <button
                                                 type="button"
-                                                onClick={() => setCategories(prev => prev.filter(x => x !== c))}
+                                                onClick={() => setCategories(prev => prev.filter((_, index) => index !== i))}
                                                 aria-label="إزالة"
                                             >
                                                 <X className="h-3 w-3" />
                                             </button>
                                         </Badge>
-                                    ))}
+                                    )})}
                                 </div>
                             )}
                         </Field>

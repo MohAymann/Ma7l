@@ -52,8 +52,8 @@ export default function ProductsPage() {
             const inName = item.name.toLowerCase().includes(searchWord);
             const inDescription = item.description.toLowerCase().includes(searchWord);
             const inBarcode = item.barcode?.toString().includes(searchWord)
-            const inCategory = item.category.some(i =>
-                i.toLowerCase().includes(searchWord)
+            const inCategory = item.category?.some(i =>
+                (typeof i === 'string' ? i : i.name).toLowerCase().includes(searchWord)
             );
 
             return inName || inDescription || inCategory || inBarcode;

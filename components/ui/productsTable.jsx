@@ -1,3 +1,4 @@
+
 import { Package, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "./badge";
@@ -69,8 +70,10 @@ export default function ProductsTable({ products, setDeleteProductOpen, setDelet
                             </TableCell>
                             <TableCell>
                                 <div className="flex flex-wrap gap-1">
-                                    {product.category.map(cat => (
-                                        <Badge key={cat} variant="secondary">{cat}</Badge>
+                                    {product.category?.map(cat => (
+                                        <Badge key={typeof cat === 'string' ? cat : cat.id} variant="secondary">
+                                            {typeof cat === 'string' ? cat : cat.name}
+                                        </Badge>
                                     ))}
                                 </div>
                             </TableCell>
